@@ -1,0 +1,29 @@
+name: Claudette
+options:
+  bundleIdPrefix: com.claudette
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+targets:
+  Claudette:
+    type: application
+    platform: macOS
+    sources:
+      - path: Claudette
+    dependencies:
+      - sdk: libsqlite3.tbd
+    info:
+      path: Claudette/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: Claudette
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.claudette.menubar
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_FILE: Claudette/Info.plist
