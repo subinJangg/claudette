@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Claudette · Lavender Pulse 변형</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif; color: #1D1D1F; background: #FAFBFC; }
+  header { padding: 40px 48px 24px; }
+  header h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  header p { margin: 0; color: #86868B; font-size: 15px; }
+  .controls { display: flex; gap: 8px; padding: 0 48px 24px; flex-wrap: wrap; }
+  .controls button {
+    appearance: none; border: 1px solid #d6d8dc; background: white;
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; cursor: pointer;
+  }
+  .controls button.active { background: #7E5BEF; color: white; border-color: #7E5BEF; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px; padding: 0 48px 64px;
+  }
+  .card { background: white; border: 1px solid #e6e8ec; border-radius: 20px; padding: 24px; }
+  .stage {
+    border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: center;
+    background: #F2F3F5; margin-bottom: 16px; min-height: 240px;
+    transition: background .2s ease;
+  }
+  body.dark .stage { background: #1A1A1C; }
+  .stage svg { width: 192px; height: 192px; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.15)); }
+  .sizes { display: flex; gap: 16px; align-items: flex-end; justify-content: center; padding-top: 8px; }
+  .sizes .s { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .sizes .s span { font-size: 10px; color: #86868B; }
+  .sizes svg { display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12)); }
+  .meta { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .meta h3 { margin: 0; font-size: 17px; font-weight: 600; }
+  .meta .num { color: #86868B; font-size: 13px; }
+  .desc { margin: 4px 0 14px; color: #86868B; font-size: 13px; line-height: 1.5; }
+  footer { padding: 24px 48px 48px; color: #86868B; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Lavender Pulse · 워드마크 변형</h1>
+  <p>워드마크 위치/크기/스타일이 다른 3가지 변형. 다크 토글로 알림 환경에서 어떻게 보일지 체크.</p>
+</header>
+
+<div class="controls">
+  <button id="b-light" class="active">라이트 배경</button>
+  <button id="b-dark">다크 배경</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>1024×1024 SVG · macOS Big Sur squircle</footer>
+
+<script>
+  const items = [
+    { file: "02-lavender-pulse.svg", title: "02 · Standard", subtitle: "기본",
+      desc: "Tachometer 시안과 비슷한 위치/크기. 모두 대문자 'CLAUDETTE', 자간 약간. 펄스 라인과 균형 있음." },
+    { file: "02b-lavender-pulse-bold.svg", title: "02b · Bold", subtitle: "강조",
+      desc: "워드마크가 메인이 되는 버전. 'Claudette' 첫글자만 대문자, 크고 굵게. 알림 아이콘에서 브랜드 이름 강하게 인식." },
+    { file: "02c-lavender-pulse-subtle.svg", title: "02c · Subtle", subtitle: "차분",
+      desc: "양옆 작은 점 + 넓은 자간으로 차분/우아하게. 펄스 라인이 시각 중심이고, 워드마크는 보조적." },
+  ];
+
+  const grid = document.getElementById("grid");
+  async function load() {
+    for (const it of items) {
+      const card = document.createElement("div");
+      card.className = "card";
+      const svg = await fetch(it.file).then(r => r.text());
+      card.innerHTML = `
+        <div class="meta">
+          <h3>${it.title}</h3>
+          <span class="num">${it.subtitle}</span>
+        </div>
+        <p class="desc">${it.desc}</p>
+        <div class="stage">${svg}</div>
+        <div class="sizes">
+          ${[128, 64, 32, 16].map(s => `
+            <div class="s">
+              <div style="width:${s}px;height:${s}px;">${svg.replace(/width="1024"/, `width="${s}"`).replace(/height="1024"/, `height="${s}"`)}</div>
+              <span>${s}px</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+  }
+  load();
+
+  const bL = document.getElementById("b-light");
+  const bD = document.getElementById("b-dark");
+  bL.onclick = () => { bL.classList.add("active"); bD.classList.remove("active"); document.body.classList.remove("dark"); };
+  bD.onclick = () => { bD.classList.add("active"); bL.classList.remove("active"); document.body.classList.add("dark"); };
+</script>
+</body>
+</html>

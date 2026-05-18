@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Claudette · Midnight 변형</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif; color: #1D1D1F; background: #FAFBFC; }
+  header { padding: 40px 48px 12px; }
+  header h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  header p { margin: 0; color: #86868B; font-size: 15px; line-height: 1.6; max-width: 780px; }
+  .controls { display: flex; gap: 8px; padding: 16px 48px 24px; flex-wrap: wrap; }
+  .controls button {
+    appearance: none; border: 1px solid #d6d8dc; background: white;
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; cursor: pointer;
+  }
+  .controls button.active { background: #1D1D1F; color: white; border-color: #1D1D1F; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px; padding: 0 48px 32px;
+  }
+  .card { background: white; border: 1px solid #e6e8ec; border-radius: 20px; padding: 20px; }
+  .stage {
+    border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: center;
+    background: #F2F3F5; margin-bottom: 14px; min-height: 220px;
+    transition: background .2s ease;
+  }
+  body.dark .stage { background: #1A1A1C; }
+  body.notif .stage { background: #FFFFFF; border: 1px solid #E6E8EC; }
+  body.notif.dark .stage { background: #2C2C2E; }
+  .stage svg { width: 184px; height: 184px; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.15)); }
+  .sizes { display: flex; gap: 14px; align-items: flex-end; justify-content: center; padding-top: 6px; }
+  .sizes .s { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .sizes .s span { font-size: 10px; color: #86868B; }
+  .meta { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .meta h3 { margin: 0; font-size: 16px; font-weight: 600; }
+  .meta .num { color: #86868B; font-size: 12px; font-family: ui-monospace, SF Mono, monospace; }
+  .desc { margin: 4px 0 12px; color: #86868B; font-size: 12.5px; line-height: 1.5; }
+  .recommend { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #FFF4D6; color: #8B6B1F; margin-left: 8px; }
+  footer { padding: 24px 48px 48px; color: #86868B; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Midnight · 라벤더 액센트 강도 비교</h1>
+  <p>다크 베이스 위에 어디에 라벤더를 얼마나 넣을지가 핵심. 알림 카드 배경 토글로 실제 알림에서 어떻게 보일지 체크 가능.</p>
+</header>
+
+<div class="controls">
+  <button id="b-light" class="active">라이트</button>
+  <button id="b-dark">다크</button>
+  <button id="b-notif">알림 카드</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>1024×1024 SVG · 다크 베이스 + 라벤더 액센트 변형</footer>
+
+<script>
+  const items = [
+    { file: "midnight/f1-lavender-pulse.svg", title: "F1", subtitle: "Lavender Pulse",
+      desc: "펄스 라인 자체를 라벤더로. 한 곳에 집중된 액센트라 가장 차분하면서도 시그니처가 분명.",
+      note: "추천" },
+    { file: "midnight/f2-lavender-glow.svg", title: "F2", subtitle: "Lavender Glow",
+      desc: "흰 펄스 라인 + 라벤더 글로우(언더 그림자). 가장 화사하고 '살아 움직이는' 느낌." },
+    { file: "midnight/f3-lavender-wordmark.svg", title: "F3", subtitle: "Lavender Wordmark",
+      desc: "워드마크를 라벤더 그라데이션으로. 펄스는 흰색 유지. 브랜드 이름이 더 인상에 남음." },
+    { file: "midnight/f4-lavender-tint.svg", title: "F4", subtitle: "Lavender Tinted BG",
+      desc: "배경에 라벤더를 더 섞어서 덜 검정스럽게. 가장 안전한 변형이지만 다크 정체성은 약함." },
+  ];
+
+  const grid = document.getElementById("grid");
+  async function load() {
+    for (const it of items) {
+      const card = document.createElement("div");
+      card.className = "card";
+      const svg = await fetch(it.file).then(r => r.text());
+      const noteHtml = it.note ? `<span class="recommend">${it.note}</span>` : "";
+      card.innerHTML = `
+        <div class="meta">
+          <h3>${it.title} · ${it.subtitle}${noteHtml}</h3>
+        </div>
+        <p class="desc">${it.desc}</p>
+        <div class="stage">${svg}</div>
+        <div class="sizes">
+          ${[128, 64, 32, 16].map(s => `
+            <div class="s">
+              <div style="width:${s}px;height:${s}px;">${svg.replace(/width="1024"/, `width="${s}"`).replace(/height="1024"/, `height="${s}"`)}</div>
+              <span>${s}px</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+  }
+  load();
+
+  const bL = document.getElementById("b-light");
+  const bD = document.getElementById("b-dark");
+  const bN = document.getElementById("b-notif");
+  function setMode(active, cls) {
+    [bL,bD,bN].forEach(b => b.classList.remove("active"));
+    active.classList.add("active");
+    document.body.className = cls;
+  }
+  bL.onclick = () => setMode(bL, "");
+  bD.onclick = () => setMode(bD, "dark");
+  bN.onclick = () => setMode(bN, "notif");
+</script>
+</body>
+</html>

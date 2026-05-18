@@ -2,10 +2,24 @@ import SwiftUI
 
 @main
 struct ClaudetteApp: App {
-    @StateObject private var usageService = UsageService()
-    @StateObject private var settings = AppSettings()
-    @StateObject private var notificationService = NotificationService()
-    @StateObject private var usageSamples = UsageSamples()
+    @StateObject private var usageService: UsageService
+    @StateObject private var settings: AppSettings
+    @StateObject private var notificationService: NotificationService
+    @StateObject private var usageSamples: UsageSamples
+
+    init() {
+        let service = UsageService()
+        let s = AppSettings()
+        let ns = NotificationService()
+        let samples = UsageSamples()
+        service.notificationService = ns
+        service.settings = s
+        service.usageSamples = samples
+        _usageService = StateObject(wrappedValue: service)
+        _settings = StateObject(wrappedValue: s)
+        _notificationService = StateObject(wrappedValue: ns)
+        _usageSamples = StateObject(wrappedValue: samples)
+    }
 
     var body: some Scene {
         MenuBarExtra {

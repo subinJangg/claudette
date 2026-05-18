@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Claudette 아이콘 시안 비교</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg-light: #F2F3F5;
+    --bg-dark: #1A1A1C;
+    --text: #1D1D1F;
+    --muted: #86868B;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif; color: var(--text); background: #FAFBFC; }
+  header { padding: 40px 48px 16px; }
+  header h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  header p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  .controls { display: flex; gap: 8px; padding: 0 48px 24px; flex-wrap: wrap; }
+  .controls button {
+    appearance: none; border: 1px solid #d6d8dc; background: white;
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; cursor: pointer;
+  }
+  .controls button.active { background: #0A84FF; color: white; border-color: #0A84FF; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px; padding: 0 48px 64px;
+  }
+  .card {
+    background: white; border: 1px solid #e6e8ec; border-radius: 20px; padding: 24px;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+  .stage {
+    border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: center;
+    background: var(--bg-light); margin-bottom: 16px; min-height: 240px;
+    transition: background .2s ease;
+  }
+  body.dark .stage { background: var(--bg-dark); }
+  .stage svg { width: 192px; height: 192px; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.15)); }
+
+  .sizes { display: flex; gap: 16px; align-items: flex-end; justify-content: center; padding-top: 8px; }
+  .sizes .s { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .sizes .s span { font-size: 10px; color: var(--muted); }
+  .sizes svg { display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12)); }
+
+  .meta { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .meta h3 { margin: 0; font-size: 17px; font-weight: 600; }
+  .meta .num { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .desc { margin: 4px 0 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #F0F2F5; color: #4a4a4f; }
+  .tag.brand { background: #E5F1FF; color: #0A84FF; }
+
+  footer { padding: 24px 48px 48px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Claudette · 아이콘 시안</h1>
+  <p>6가지 컨셉 비교. 배경 토글로 다크/라이트 환경에서 어떻게 보이는지 체크해봐.</p>
+</header>
+
+<div class="controls">
+  <button id="b-light" class="active">라이트 배경</button>
+  <button id="b-dark">다크 배경</button>
+  <button id="b-mosaic">모자이크 (실제 데스크탑 느낌)</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  파일 위치: <code>branding/icons/0X-*.svg</code> · 1024×1024 SVG · macOS Big Sur squircle 근사
+</footer>
+
+<script>
+  const items = [
+    { file: "01-gauge-donut.svg", title: "Gauge Donut", subtitle: "01",
+      desc: "브랜딩 문서의 '계기판+맥박' 핵심 컨셉을 가장 직접적으로 표현. 도넛 게이지 + 펄스 닷. 메뉴바 아이콘과도 시각 언어 통일.",
+      tags: ["brand:Claudette Blue", "컨셉 충실", "직관적"] },
+    { file: "02-lavender-pulse.svg", title: "Lavender Pulse", subtitle: "02",
+      desc: "시그니처 컬러 후보 Lavender(#A78BFA 계열) 풀톤 배경에 심전도 라인. 강한 존재감, 알림 아이콘으로 눈에 잘 띔.",
+      tags: ["brand:Lavender", "강한 존재감", "맥박"] },
+    { file: "03-mug-mascot.svg", title: "Mug Mascot", subtitle: "03",
+      desc: "브랜딩 문서 §11에 명시된 '머그' 마스코트 방향. 친근한 톤·코지함. 빈 상태 코피컵 카피('평화롭네요 ☕')와 연결.",
+      tags: ["마스코트", "친근함", "따뜻한 톤"] },
+    { file: "04-cd-mono.svg", title: "Cd Monogram", subtitle: "04",
+      desc: "다크 베이스 + 'Cd' 워드마크. 가장 미니멀하고 도구적인 인상. 작은 사이즈로 줄여도 식별성 유지.",
+      tags: ["미니멀", "타이포", "다크"] },
+    { file: "05-blob-friend.svg", title: "Blob Friend", subtitle: "05",
+      desc: "블롭 마스코트 방향. 게이지 아크가 캐릭터 뒤를 감싸는 구도. 가장 '도우미' 페르소나에 가까움.",
+      tags: ["마스코트", "블롭", "친근함"] },
+    { file: "06-tachometer.svg", title: "Tachometer", subtitle: "06",
+      desc: "자동차 계기판 메타포. 정상→경고→위험 그라데이션이 한도 콘셉트를 시각화. 가장 '기능적' 인상.",
+      tags: ["계기판", "기능적", "상태 그라데이션"] },
+  ];
+
+  const grid = document.getElementById("grid");
+
+  async function load() {
+    for (const it of items) {
+      const card = document.createElement("div");
+      card.className = "card";
+      const svg = await fetch(it.file).then(r => r.text());
+      card.innerHTML = `
+        <div class="meta">
+          <h3>${it.title}</h3>
+          <span class="num">#${it.subtitle}</span>
+        </div>
+        <p class="desc">${it.desc}</p>
+        <div class="stage">${svg}</div>
+        <div class="sizes">
+          ${[128, 64, 32, 16].map(s => `
+            <div class="s">
+              <div style="width:${s}px;height:${s}px;">${svg.replace(/width="1024"/, `width="${s}"`).replace(/height="1024"/, `height="${s}"`)}</div>
+              <span>${s}px</span>
+            </div>
+          `).join("")}
+        </div>
+        <div class="tags">
+          ${it.tags.map(t => {
+            const isBrand = t.startsWith("brand:");
+            const label = isBrand ? t.slice(6) : t;
+            return `<span class="tag ${isBrand ? "brand" : ""}">${label}</span>`;
+          }).join("")}
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+  }
+  load();
+
+  const bL = document.getElementById("b-light");
+  const bD = document.getElementById("b-dark");
+  const bM = document.getElementById("b-mosaic");
+  function setMode(active, light, dark, mosaicBg) {
+    [bL,bD,bM].forEach(b => b.classList.remove("active"));
+    active.classList.add("active");
+    document.body.classList.toggle("dark", !light);
+    document.querySelectorAll(".stage").forEach(s => {
+      if (mosaicBg) {
+        s.style.background = "linear-gradient(135deg,#0A84FF 0%,#A78BFA 50%,#FF9F0A 100%)";
+      } else {
+        s.style.background = "";
+      }
+    });
+  }
+  bL.onclick = () => setMode(bL, true, false, false);
+  bD.onclick = () => setMode(bD, false, true, false);
+  bM.onclick = () => setMode(bM, true, false, true);
+</script>
+</body>
+</html>

@@ -22,22 +22,6 @@ struct PopoverView: View {
         .onChange(of: settings.refreshInterval) { _, newValue in
             usageService.startAutoRefresh(interval: newValue)
         }
-        .onChange(of: usageService.lastUpdated) { _, _ in
-            handleDataUpdate()
-        }
-    }
-
-    private func handleDataUpdate() {
-        guard case .loaded(let data) = usageService.state,
-              let session = data.fiveHour else { return }
-
-        usageSamples.record(session.utilization)
-
-        notificationService.checkAndNotify(
-            utilization: session.utilization,
-            thresholds: settings.notificationThresholds,
-            sessionResetId: session.resetsAt
-        )
     }
 
     @ViewBuilder
@@ -84,7 +68,7 @@ struct PopoverView: View {
             }
 
             if !data.weeklyModels.isEmpty {
-                WeeklyCard(models: data.weeklyModels)
+                WeeklyCard(models: data.weeklyModels, settings: settings)
             }
 
             footer
@@ -98,6 +82,7 @@ struct PopoverView: View {
             lastUpdated: usageService.lastUpdated,
             isRefreshing: usageService.isRefreshing,
             snoozeUntil: notificationService.snoozeUntil,
+            snoozeDurationType: notificationService.snoozeDurationType,
             onRefresh: {
                 Task { await usageService.fetch() }
             },

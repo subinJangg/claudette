@@ -1,0 +1,30 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <title>Claudette — Cd Monogram</title>
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1F1F22"/>
+      <stop offset="1" stop-color="#101013"/>
+    </linearGradient>
+    <linearGradient id="text4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D9DDE4"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" rx="225" ry="225" fill="url(#bg4)"/>
+
+  <!-- subtle highlight on top -->
+  <path d="M225 0 H799 Q1024 0 1024 225 V310 Q700 200 512 290 Q300 380 0 310 V225 Q0 0 225 0 Z"
+        fill="#ffffff" fill-opacity="0.04"/>
+
+  <!-- Cd wordmark, system rounded approximation -->
+  <g font-family="-apple-system, SF Pro Rounded, SF Pro Display, Helvetica Neue, Arial, sans-serif"
+     font-weight="800" font-size="640" letter-spacing="-30"
+     fill="url(#text4)" text-anchor="middle">
+    <text x="512" y="712">Cd</text>
+  </g>
+
+  <!-- accent dot (pulse) -->
+  <circle cx="780" cy="720" r="36" fill="#0A84FF"/>
+  <circle cx="780" cy="720" r="62" fill="none" stroke="#0A84FF" stroke-width="6" stroke-opacity="0.35"/>
+</svg>

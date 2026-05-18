@@ -1,17 +1,50 @@
 import Foundation
+import AppKit
 import UserNotifications
 
 @MainActor
 final class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     @Published var snoozeUntil: Date?
-    private var notifiedThresholds: Set<Int> = []
-    private var lastSessionResetId: String?
+    @Published var snoozeDurationType: SnoozeDuration?
+    @Published var systemAuthStatus: UNAuthorizationStatus = .notDetermined
+    private var notifiedThresholds: Set<Int> {
+        didSet {
+            UserDefaults.standard.set(Array(notifiedThresholds), forKey: "notifiedThresholds")
+        }
+    }
+    private var lastSessionResetId: String? {
+        didSet {
+            UserDefaults.standard.set(lastSessionResetId, forKey: "lastSessionResetId")
+        }
+    }
+    private var sessionResetDate: Date?
 
     override init() {
+        if let stored = UserDefaults.standard.array(forKey: "notifiedThresholds") as? [Int] {
+            self.notifiedThresholds = Set(stored)
+        } else {
+            self.notifiedThresholds = []
+        }
+        self.lastSessionResetId = UserDefaults.standard.string(forKey: "lastSessionResetId")
         super.init()
         UNUserNotificationCenter.current().delegate = self
         setupCategories()
         restoreSnooze()
+        refreshAuthStatus()
+    }
+
+    func refreshAuthStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            DispatchQueue.main.async {
+                self?.systemAuthStatus = settings.authorizationStatus
+            }
+        }
+    }
+
+    func openSystemNotificationSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     var isSnoozed: Bool {
@@ -23,37 +56,41 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    func checkAndNotify(utilization: Double, thresholds: [Int], sessionResetId: String?) {
-        if let newId = sessionResetId, newId != lastSessionResetId {
+    func checkAndNotify(utilization: Double, thresholds: [Int], sessionResetId: String?, resetDate: Date?) {
+        self.sessionResetDate = resetDate
+        let normalizedId = sessionResetId.map { String($0.prefix(16)) }
+        if let newId = normalizedId, newId != lastSessionResetId {
             lastSessionResetId = newId
             notifiedThresholds.removeAll()
         }
 
         guard !isSnoozed else { return }
 
-        for threshold in thresholds.sorted() {
-            if utilization >= Double(threshold) && !notifiedThresholds.contains(threshold) {
-                notifiedThresholds.insert(threshold)
-                sendThresholdNotification(threshold: threshold, utilization: utilization)
-            }
+        let newlyExceeded = thresholds.sorted().filter {
+            utilization >= Double($0) && !notifiedThresholds.contains($0)
+        }
+        guard !newlyExceeded.isEmpty else { return }
+
+        for threshold in newlyExceeded {
+            notifiedThresholds.insert(threshold)
+        }
+        if let highest = newlyExceeded.last {
+            sendThresholdNotification(threshold: highest, utilization: utilization)
         }
     }
 
     func snooze(duration: SnoozeDuration, sessionResetDate: Date?) {
+        snoozeDurationType = duration
         switch duration {
         case .oneHour:
             snoozeUntil = Date().addingTimeInterval(3600)
         case .today:
-            snoozeUntil = Calendar.current.startOfDay(for: Date()).addingTimeInterval(86400)
+            snoozeUntil = Calendar.current.startOfDay(for: Date()).addingTimeInterval(86399)
         case .session:
             snoozeUntil = sessionResetDate ?? Date().addingTimeInterval(18000)
         }
         UserDefaults.standard.set(snoozeUntil?.timeIntervalSince1970, forKey: "snoozeUntilTimestamp")
-    }
-
-    func clearSnooze() {
-        snoozeUntil = nil
-        UserDefaults.standard.removeObject(forKey: "snoozeUntilTimestamp")
+        UserDefaults.standard.set(duration.rawValue, forKey: "snoozeDurationType")
     }
 
     func restoreSnooze() {
@@ -62,9 +99,19 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         let date = Date(timeIntervalSince1970: ts)
         if Date() < date {
             snoozeUntil = date
+            if let raw = UserDefaults.standard.string(forKey: "snoozeDurationType") {
+                snoozeDurationType = SnoozeDuration(rawValue: raw)
+            }
         } else {
-            UserDefaults.standard.removeObject(forKey: "snoozeUntilTimestamp")
+            clearSnooze()
         }
+    }
+
+    func clearSnooze() {
+        snoozeUntil = nil
+        snoozeDurationType = nil
+        UserDefaults.standard.removeObject(forKey: "snoozeUntilTimestamp")
+        UserDefaults.standard.removeObject(forKey: "snoozeDurationType")
     }
 
     // MARK: - Private
@@ -106,11 +153,11 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         await MainActor.run {
             switch response.actionIdentifier {
             case "SNOOZE_1H":
-                snooze(duration: .oneHour, sessionResetDate: nil)
+                snooze(duration: .oneHour, sessionResetDate: sessionResetDate)
             case "SNOOZE_TODAY":
-                snooze(duration: .today, sessionResetDate: nil)
+                snooze(duration: .today, sessionResetDate: sessionResetDate)
             case "SNOOZE_SESSION":
-                snooze(duration: .session, sessionResetDate: nil)
+                snooze(duration: .session, sessionResetDate: sessionResetDate)
             default:
                 break
             }
@@ -125,8 +172,16 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
     }
 }
 
-enum SnoozeDuration {
+enum SnoozeDuration: String {
     case oneHour
     case today
     case session
+
+    var label: String {
+        switch self {
+        case .oneHour: "1시간 끄기"
+        case .today: "오늘 그만"
+        case .session: "이번 세션 끄기"
+        }
+    }
 }

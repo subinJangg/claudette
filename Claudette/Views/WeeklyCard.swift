@@ -2,6 +2,18 @@ import SwiftUI
 
 struct WeeklyCard: View {
     let models: [WeeklyModelUsage]
+    @ObservedObject var settings: AppSettings
+
+    private var visibleModels: [WeeklyModelUsage] {
+        let order = settings.weeklyModelOrder
+        if order.isEmpty { return models }
+        let visible = models.filter { order.contains($0.id) }
+        return visible.sorted { a, b in
+            let aIdx = order.firstIndex(of: a.id) ?? Int.max
+            let bIdx = order.firstIndex(of: b.id) ?? Int.max
+            return aIdx < bIdx
+        }
+    }
 
     private var resetDate: Date? {
         models.compactMap { $0.bucket.resetsAtDate }.first
@@ -20,7 +32,7 @@ struct WeeklyCard: View {
                 }
             }
 
-            ForEach(models) { model in
+            ForEach(visibleModels) { model in
                 WeeklyRow(model: model)
             }
         }

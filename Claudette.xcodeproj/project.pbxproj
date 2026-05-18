@@ -16,6 +16,7 @@
 		41187094F60AD708F487046B /* SetupGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F5465038A64F64FED4A7F2E /* SetupGuideView.swift */; };
 		423334506CBC826351D8D6A0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87F8CDAF640093F140C0BCE6 /* SettingsView.swift */; };
 		4305BD88AF5EA5F9419D4468 /* UsageSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91E7ED0238703BAC8D6173C3 /* UsageSamples.swift */; };
+		4C41E1DE51F8568E82AD57D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B13E39338313ED4777462BF6 /* Assets.xcassets */; };
 		53904EA52A71F54E0F05144F /* ResetTimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F169FCDE7CBD1664C76ADE /* ResetTimeFormatter.swift */; };
 		5FDC1B76070D1D99F8280AE1 /* DesktopSessionReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3CCC715BA3362ADCA5C99B /* DesktopSessionReader.swift */; };
 		62853ABE9BDF3A5745BE1CA8 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963756D69C22E16BE66940CE /* ProgressBar.swift */; };
@@ -59,6 +60,7 @@
 		91E7ED0238703BAC8D6173C3 /* UsageSamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageSamples.swift; sourceTree = "<group>"; };
 		963756D69C22E16BE66940CE /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
 		AD3CCC715BA3362ADCA5C99B /* DesktopSessionReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopSessionReader.swift; sourceTree = "<group>"; };
+		B13E39338313ED4777462BF6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B65D1DEC9CB8C04A78F35BC2 /* modules.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = modules.xml; sourceTree = "<group>"; };
 		B6C210F29B345EA6201EE0BC /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		B878571AD0CC327FC41F1075 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 		4B13635758D1186FDA346EE7 /* Claudette */ = {
 			isa = PBXGroup;
 			children = (
+				B13E39338313ED4777462BF6 /* Assets.xcassets */,
 				4B54EEE60689EE9B781A781B /* ClaudetteApp.swift */,
 				367233EBD227FA09C3CE5CAE /* Info.plist */,
 				F85BDD209EDBD8F6D7811850 /* .idea */,
@@ -241,6 +244,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C41E1DE51F8568E82AD57D2 /* Assets.xcassets in Resources */,
 				88930C2AF57B2FDDCE0149E1 /* ClaudeUsageMenuBar.iml in Resources */,
 				20C609C9514D4B812E886BDC /* material_theme_project_new.xml in Resources */,
 				FFA68A755CE680F3EAC66969 /* misc.xml in Resources */,

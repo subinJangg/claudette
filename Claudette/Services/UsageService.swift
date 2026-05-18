@@ -21,6 +21,9 @@ final class UsageService: ObservableObject {
     @Published var isRefreshing = false
 
     private var timer: Timer?
+    var notificationService: NotificationService?
+    var settings: AppSettings?
+    var usageSamples: UsageSamples?
 
     init() {
         state = .loading
@@ -45,10 +48,6 @@ final class UsageService: ObservableObject {
         }
     }
 
-    func stopAutoRefresh() {
-        timer?.invalidate()
-        timer = nil
-    }
 
     func fetch() async {
         guard let credentials = await CredentialsStore.shared.loadAsync() else {
@@ -82,6 +81,21 @@ final class UsageService: ObservableObject {
                     let usage = try UsageData(from: data)
                     state = .loaded(usage)
                     lastUpdated = Date()
+                    settings?.updateAvailableModels(from: usage.weeklyModels)
+                    if let session = usage.fiveHour {
+                        usageSamples?.record(session.utilization)
+                    }
+                    if let session = usage.fiveHour,
+                       let ns = notificationService,
+                       let s = settings,
+                       s.notificationsEnabled {
+                        ns.checkAndNotify(
+                            utilization: session.utilization,
+                            thresholds: s.notificationThresholds,
+                            sessionResetId: session.resetsAt,
+                            resetDate: session.resetsAtDate
+                        )
+                    }
                 } catch {
                     state = .error(.parseError)
                 }
@@ -106,6 +120,7 @@ final class UsageService: ObservableObject {
                 let interval = UserDefaults.standard.integer(forKey: "refreshIntervalSeconds")
                 self.startAutoRefresh(interval: interval > 0 ? interval : 300)
             } else {
+                self.timer?.invalidate()
                 self.state = .notLoggedIn
             }
         }

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Claudette · 컬러 변형</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif; color: #1D1D1F; background: #FAFBFC; }
+  header { padding: 40px 48px 12px; }
+  header h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  header p { margin: 0; color: #86868B; font-size: 15px; line-height: 1.6; max-width: 780px; }
+  .controls { display: flex; gap: 8px; padding: 16px 48px 24px; flex-wrap: wrap; }
+  .controls button {
+    appearance: none; border: 1px solid #d6d8dc; background: white;
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; cursor: pointer;
+  }
+  .controls button.active { background: #1D1D1F; color: white; border-color: #1D1D1F; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px; padding: 0 48px 32px;
+  }
+  .card { background: white; border: 1px solid #e6e8ec; border-radius: 20px; padding: 20px; }
+  .stage {
+    border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: center;
+    background: #F2F3F5; margin-bottom: 14px; min-height: 220px;
+    transition: background .2s ease;
+  }
+  body.dark .stage { background: #1A1A1C; }
+  body.mosaic .stage { background-image: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(220,220,230,0.9)), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><rect width='40' height='40' fill='%23E8E9EE'/><rect x='4' y='4' width='14' height='14' rx='3' fill='%23D0D2D9'/><rect x='22' y='4' width='14' height='14' rx='3' fill='%23D0D2D9'/><rect x='4' y='22' width='14' height='14' rx='3' fill='%23D0D2D9'/><rect x='22' y='22' width='14' height='14' rx='3' fill='%23D0D2D9'/></svg>"); }
+  .stage svg { width: 184px; height: 184px; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.15)); }
+  .sizes { display: flex; gap: 14px; align-items: flex-end; justify-content: center; padding-top: 6px; }
+  .sizes .s { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .sizes .s span { font-size: 10px; color: #86868B; }
+  .meta { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .meta h3 { margin: 0; font-size: 16px; font-weight: 600; }
+  .meta .num { color: #86868B; font-size: 12px; font-family: ui-monospace, SF Mono, monospace; }
+  .desc { margin: 4px 0 12px; color: #86868B; font-size: 12.5px; line-height: 1.5; }
+  .swatches { display: flex; gap: 6px; margin: 8px 0 12px; }
+  .sw { width: 24px; height: 24px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); }
+  .recommend { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #FFF4D6; color: #8B6B1F; margin-left: 8px; }
+  footer { padding: 24px 48px 48px; color: #86868B; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Claudette · 컬러 팔레트 비교</h1>
+  <p>같은 레이아웃(02 Standard)에 배경 컬러만 바꾼 6가지 변형. 알림 트레이의 잡다한 아이콘 사이에서 어떻게 보일지가 핵심.</p>
+</header>
+
+<div class="controls">
+  <button id="b-light" class="active">라이트 데스크탑</button>
+  <button id="b-dark">다크 데스크탑</button>
+  <button id="b-mosaic">다른 앱들 사이 (모자이크)</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>1024×1024 SVG · macOS Big Sur squircle · 펄스 라인은 모두 동일, 배경 그라데이션만 다름</footer>
+
+<script>
+  const items = [
+    { file: "colors/a-lavender.svg", title: "Lavender", num: "#C7B8FF → #7E5BEF",
+      desc: "현재 색. 라이트한 라벤더 → 보라. 친근하고 차분, 다른 macOS 앱들과 잘 구분됨.",
+      sw: ["#C7B8FF","#7E5BEF"], note: "현재" },
+    { file: "colors/b-deep.svg", title: "Deep Lavender", num: "#A78BFA → #5B3FD8",
+      desc: "브랜드 가이드의 Claudette Lavender (#A78BFA) 베이스. 더 농밀하고 자신감 있음. 알림에서 존재감 더 큼.",
+      sw: ["#A78BFA","#5B3FD8"], note: "추천" },
+    { file: "colors/c-periwinkle.svg", title: "Periwinkle", num: "#B6CDFF → #6366F1",
+      desc: "라벤더와 블루 사이. 약간 더 '도구'같은 인상. 둘 다 좋아서 결정 못하겠으면 절충안.",
+      sw: ["#B6CDFF","#6366F1"] },
+    { file: "colors/d-blue.svg", title: "Claudette Blue", num: "#5AC8FA → #0A84FF",
+      desc: "브랜드 가이드의 다른 후보 시그니처 컬러. macOS 시스템 블루랑 통일감. 단점은 시스템 앱 사이에 묻힐 위험.",
+      sw: ["#5AC8FA","#0A84FF"] },
+    { file: "colors/e-sunset.svg", title: "Sunset", num: "#FFB199 → #FF6B9D",
+      desc: "완전히 다른 방향. 따뜻하고 활기참. Claudette의 '친근한' 페르소나 강조하고 싶을 때.",
+      sw: ["#FFB199","#FF6B9D"] },
+    { file: "colors/f-charcoal.svg", title: "Midnight", num: "#3D3656 → #1A1426",
+      desc: "다크 베이스 + 라벤더 톤. 차분/은은. 알림 어두운 톤이라 시각적 휴식. 메뉴바와 통일감.",
+      sw: ["#3D3656","#1A1426"] },
+  ];
+
+  const grid = document.getElementById("grid");
+  async function load() {
+    for (const it of items) {
+      const card = document.createElement("div");
+      card.className = "card";
+      const svg = await fetch(it.file).then(r => r.text());
+      const noteHtml = it.note ? `<span class="recommend">${it.note}</span>` : "";
+      card.innerHTML = `
+        <div class="meta">
+          <h3>${it.title}${noteHtml}</h3>
+          <span class="num">${it.num}</span>
+        </div>
+        <div class="swatches">${it.sw.map(c => `<div class="sw" style="background:${c}"></div>`).join("")}</div>
+        <p class="desc">${it.desc}</p>
+        <div class="stage">${svg}</div>
+        <div class="sizes">
+          ${[128, 64, 32, 16].map(s => `
+            <div class="s">
+              <div style="width:${s}px;height:${s}px;">${svg.replace(/width="1024"/, `width="${s}"`).replace(/height="1024"/, `height="${s}"`)}</div>
+              <span>${s}px</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+  }
+  load();
+
+  const bL = document.getElementById("b-light");
+  const bD = document.getElementById("b-dark");
+  const bM = document.getElementById("b-mosaic");
+  function setMode(active, cls) {
+    [bL,bD,bM].forEach(b => b.classList.remove("active"));
+    active.classList.add("active");
+    document.body.className = cls;
+  }
+  bL.onclick = () => setMode(bL, "");
+  bD.onclick = () => setMode(bD, "dark");
+  bM.onclick = () => setMode(bM, "mosaic");
+</script>
+</body>
+</html>

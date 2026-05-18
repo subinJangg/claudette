@@ -4,6 +4,7 @@ struct FooterView: View {
     let lastUpdated: Date?
     let isRefreshing: Bool
     var snoozeUntil: Date?
+    var snoozeDurationType: SnoozeDuration?
     let onRefresh: () -> Void
     let onSettings: () -> Void
     let onQuit: () -> Void
@@ -16,8 +17,13 @@ struct FooterView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "bell.slash.fill")
                         .font(.system(size: 11))
-                    Text("알림 일시정지 중 (\(snoozeDate, style: .time) 까지)")
-                        .font(.system(size: 11))
+                    if let type = snoozeDurationType {
+                        Text("\(type.label) · \(snoozeDate, style: .time) 까지")
+                            .font(.system(size: 11))
+                    } else {
+                        Text("알림 일시정지 중 · \(snoozeDate, style: .time) 까지")
+                            .font(.system(size: 11))
+                    }
                 }
                 .foregroundStyle(.secondary)
             }
