@@ -86,10 +86,12 @@ Claude Max 플랜 사용 중인 macOS 사용자. 작업 중 한도 임박 여부
 
 ### 3.5 설정창
 
-톱니바퀴 아이콘 클릭 → 시트(sheet) 등장. 포함 내용:
-- 새로고침 주기 선택
-- "Claude.ai 재로그인" 버튼
-- "로그아웃" 버튼
+톱니바퀴 아이콘 클릭 → 인라인 설정 화면. 포함 내용:
+- 새로고침 주기 선택 (1분 / 3분 / 5분 / 10분)
+- 메뉴바 아이콘 스타일 (도넛 / 배터리)
+- 메뉴바 표시 모드 (퍼센트 / 카운트다운)
+- 주간 한도 모델 표시/숨김/순서 변경
+- 알림 on/off + 임계치 선택 (50~90%, 중복 가능) + 스누즈 상태 표시
 
 ### 3.6 에러 처리
 
@@ -100,29 +102,21 @@ Claude Max 플랜 사용 중인 macOS 사용자. 작업 중 한도 임박 여부
 
 에러 UI 패턴은 `DESIGN.md` §13 참고.
 
-### 3.7 Onboarding & 로그인 플로우 ⭐
+### 3.7 인증 플로우
 
-**v0.1 MVP 의 핵심.** 사용자가 터미널이나 DevTools 만질 일 없이 한 번의 로그인으로 끝나도록 함.
+**Claude Desktop 쿠키 자동 감지 방식.** 사용자가 별도 로그인할 필요 없음.
 
-#### 첫 실행 흐름
+#### 동작 흐름
 
-1. 앱 실행 → 저장된 세션 없음 감지
-2. 메뉴바 아이콘 클릭 시 popover 대신 **Onboarding 화면** 표시
-3. "Claude에 로그인" 큰 버튼 + 보조 텍스트
-4. 클릭 → `NSWindow` + `WKWebView` 에 `https://claude.ai/login` 로드
-5. 사용자가 평소처럼 로그인 (Google SSO 등 무관)
-6. 로그인 성공 감지 → `WKHTTPCookieStore` 에서 `sessionKey` 추출
-7. `GET /api/organizations` 로 `org_id` 가져옴 → Keychain 에 저장
-8. Onboarding 창 닫고 popover 로 전환
+1. 앱 실행 → `DesktopSessionReader`가 Claude Desktop의 Cookies DB에서 암호화된 `sessionKey` 읽기
+2. 키체인에서 `Claude Safe Storage` 비밀번호로 복호화 (PBKDF2 + AES-128-CBC, Chromium v10)
+3. `sessionKey` + `orgId` 추출 → `CredentialsStore`에 캐싱
+4. 세션 유효 → 사용량 표시 시작
 
-#### Fallback: 수동 sessionKey 붙여넣기
+#### 미연결 시
 
-Onboarding 화면 하단 "고급: sessionKey 직접 입력" 링크 → 회사 SSO 환경 등 WKWebView 로그인이 막힐 때 대비.
-
-#### 재로그인
-
-- 세션 만료 (HTTP 401/403) → popover 에 "재로그인" 버튼 표시 → 클릭 시 WKWebView 다시 띄움
-- 설정의 "로그아웃" → Keychain + cookie store 클리어 → onboarding 복귀
+- Claude Desktop이 없거나 로그인 안 된 상태 → SetupGuideView 표시
+- 세션 만료 (HTTP 401/403) → 에러 카드 + "다시 확인" 버튼
 
 ---
 
@@ -136,7 +130,7 @@ Onboarding 화면 하단 "고급: sessionKey 직접 입력" 링크 → 회사 SS
 Cookie: sessionKey=sk-ant-sid01-...
 ```
 
-WKWebView 로그인 후 `WKHTTPCookieStore` 에서 자동 추출.
+Claude Desktop의 Cookies DB에서 자동 추출 (Chromium v10 암호화 포맷, Chrome 146+ nonce 대응).
 
 ### 4.2 엔드포인트
 
@@ -223,15 +217,16 @@ GET https://claude.ai/api/organizations/{org_id}/usage   # 사용량 조회
 | 키 | 타입 | 기본값 | 도입 버전 |
 |----|------|--------|----------|
 | `refreshIntervalSeconds` | `Int` | `300` | v0.1 |
-| `useFallbackFileStorage` | `Bool` | `false` | v0.1 |
-| `warningThresholdPercent` | `Int` | `50` | v0.2 |
-| `dangerThresholdPercent` | `Int` | `80` | v0.2 |
-| `menuBarDisplayMode` | `String` (`percent`/`countdown`/`auto`) | `auto` | v0.2 |
-| `predictionEnabled` | `Bool` | `true` | v0.3 |
-| `predictionWindowMinutes` | `Int` | `30` | v0.3 |
-| `snoozeUntil` | `Date?` | `nil` | v0.3 |
-| `notificationThresholds` | `[Int]` | `[80]` | v0.3 |
-| `menuBarTemplate` | `String` | `"{icon} {session}%"` | v0.5 |
+| `menuBarDisplayMode` | `String` (`percent`/`countdown`) | `percent` | v0.1 |
+| `menuBarIconStyle` | `String` (`donut`/`battery`) | `donut` | v0.1 |
+| `notificationsEnabled` | `Bool` | `false` | v0.2 |
+| `notificationThresholds` | `[Int]` | `[80]` | v0.2 |
+| `notifiedThresholds` | `[Int]` | `[]` | v0.2 |
+| `lastSessionResetId` | `String?` | `nil` | v0.2 |
+| `snoozeUntilTimestamp` | `Double` | `0` | v0.2 |
+| `snoozeDurationType` | `String?` | `nil` | v0.2 |
+| `weeklyModelOrder` | `[String]` | `[]` (API에서 자동) | v0.2 |
+| `hiddenWeeklyModels` | `[String]` | `[]` | v0.2 |
 
 ### 5.3 WKWebView 쿠키 저장소
 
@@ -309,31 +304,31 @@ ClaudeUsageMenuBar/
 
 ### v0.2 — 폴리싱 & 커스터마이징
 
-- [ ] 메뉴바 아이콘 애니메이션 (새로고침 중 회전)
+- [x] 메뉴바 아이콘 애니메이션 (새로고침 중 회전)
 - [ ] Popover 등장 / 사라짐 애니메이션
 - [ ] 키보드 단축키 (`Cmd+R`, `Cmd+,`)
-- [ ] VoiceOver 접근성 라벨
+- [x] VoiceOver 접근성 라벨
 - [ ] 다국어 (한국어 / 영어)
-- [ ] Claude Desktop 앱 쿠키 자동 감지
+- [x] Claude Desktop 앱 쿠키 자동 감지
 - [ ] **사용자 정의 색상 임계값** — 두 슬라이더 (warning / danger), 미리보기 progress bar 실시간 반영
-- [ ] **세션 종료 카운트다운 모드** — 사용량 80% 이상일 때 메뉴바를 `🔴 RESET 13m` 으로 자동 전환. "항상 퍼센트 / 항상 카운트다운 / 자동" 세 모드
+- [x] **세션 종료 카운트다운 모드** — 퍼센트 / 카운트다운 전환
+- [x] **메뉴바 아이콘 스타일** — 도넛 / 배터리 선택
+- [x] **주간 한도 모델 필터/순서** — 설정에서 표시할 모델 선택 + 순서 변경 (API 동적 반영)
 
 ### v0.3 — 알림 & 예측
 
-- [ ] 임계값 도달 시 macOS notification
-- [ ] 임계값 커스터마이즈 (예: 80%, 95%)
-- [ ] 알림 빈도 제한
+- [x] 임계값 도달 시 macOS notification
+- [x] 임계값 커스터마이즈 (50~90%, 중복 선택 가능)
+- [x] 알림 중복 방지 (동시 여러 임계치 초과 시 최고값만 발송)
+- [x] 시스템 알림 권한 체크 + 안내 UI
 - [ ] 한도 임박 시 메뉴바 아이콘 흔들기
-- [ ] **사용 속도 예측** — 최근 30분 추세를 선형 외삽 → "현재 페이스로 약 47분 후 한도 도달"
-  - 데이터: 60분 ring buffer, 30초 간격 (120 samples)
-  - 알고리즘: linear regression on (timestamp, utilization)
-  - 표시 조건: 최근 5분 안에 1%p+ 증가했을 때만
-  - Popover 세션 카드 하단 + 예측 알림 발송
-- [ ] **알림 Snooze** — "1시간 끄기 / 오늘 그만 / 이번 세션 끄기" 액션
-  - `UNNotificationAction` 옵션 첨부
-  - `snoozeUntil: Date?` 를 UserDefaults 에 저장
+- [x] **사용 속도 예측** — 선형 회귀 기반 한도 도달 시간 예측
+- [x] **알림 Snooze** — "1시간 끄기 / 오늘 그만 / 이번 세션 끄기" 액션
+  - `UNNotificationAction` 커스텀 액션
+  - 스누즈 타입 + 만료 시각 UserDefaults 저장
   - 만료 시각 도달하면 자동 해제
-  - Snooze 중에는 popover 푸터에 "🔕 알림 일시정지 중 (HH:MM 까지)"
+  - 메인 화면 + 설정에서 스누즈 타입/시각 표시 + 해제 버튼
+- [x] **앱 아이콘** — 라벤더 펄스 디자인 (Asset Catalog)
 
 ### v0.4 — 히스토리
 

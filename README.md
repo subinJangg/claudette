@@ -11,8 +11,9 @@ macOS 메뉴바에서 Claude.ai 사용량을 실시간으로 확인하는 앱.
 - 메뉴바에 현재 세션 사용률 항상 표시 (퍼센트 / 카운트다운)
 - 클릭 시 세션 + 주간 한도 상세 확인
 - 한도 도달 예측 (선형 회귀 기반)
-- 임계치 도달 시 알림 (80% 등 사용자 설정)
-- 알림 일시정지 (1시간 / 오늘 / 이번 세션)
+- 임계치 도달 시 macOS 알림 (50~90%, 중복 선택 가능)
+- 알림 일시정지 — 1시간 / 오늘 / 이번 세션 (알림 액션 또는 설정에서)
+- 주간 한도 모델별 표시/숨김/순서 변경 (API에서 동적 반영)
 - 메뉴바 아이콘 스타일 선택 (도넛 / 배터리)
 - 자동 새로고침 (1분 ~ 10분, 사용자 선택)
 
@@ -64,33 +65,35 @@ hdiutil create -volname "Claudette" -srcfolder ~/Library/Developer/Xcode/Derived
 claudette/
 ├── project.yml                    ← XcodeGen 설정
 ├── run.sh                         ← 빌드 & 실행 스크립트
+├── branding/icons/                ← 앱 아이콘 원본 (SVG, iconset, icns)
 └── Claudette/
-    ├── ClaudetteApp.swift         # @main, MenuBarExtra
+    ├── ClaudetteApp.swift         # @main, MenuBarExtra, DI 설정
+    ├── Assets.xcassets/           # 앱 아이콘 (Asset Catalog)
     ├── Info.plist
     ├── Models/
     │   ├── UsageResponse.swift    # API 응답 파싱 (UsageData, UsageBucket)
     │   ├── UsageLevel.swift       # 상태 단계 (normal/warning/danger)
     │   └── UsageSamples.swift     # 사용량 샘플 수집 & 한도 예측
     ├── Services/
-    │   ├── UsageService.swift     # API 호출 + 상태 관리
+    │   ├── UsageService.swift     # API 호출 + 상태 관리 + 알림/샘플 트리거
     │   ├── CredentialsStore.swift # 세션키 + orgId 캐싱
     │   ├── DesktopSessionReader.swift  # Claude Desktop 쿠키 복호화
-    │   ├── NotificationService.swift   # 임계치 알림
+    │   ├── NotificationService.swift   # 임계치 알림 + 스누즈 + 시스템 권한
     │   └── ResetTimeFormatter.swift    # 재설정 시간 포맷
     ├── Views/
     │   ├── PopoverView.swift      # 메뉴바 클릭 시 메인 화면
     │   ├── SetupGuideView.swift   # 미연결 시 가이드
     │   ├── HeaderView.swift       # 플랜 + 상태 뱃지
     │   ├── SessionCard.swift      # 현재 세션 카드
-    │   ├── WeeklyCard.swift       # 주간 한도 카드
+    │   ├── WeeklyCard.swift       # 주간 한도 카드 (설정 기반 필터/순서)
     │   ├── WeeklyRow.swift        # 주간 행 (모델별)
     │   ├── ProgressBar.swift      # 커스텀 progress bar
-    │   ├── FooterView.swift       # 마지막 업데이트 + 액션 버튼
+    │   ├── FooterView.swift       # 마지막 업데이트 + 스누즈 상태 + 액션 버튼
     │   ├── ErrorCard.swift        # 에러 표시
     │   ├── MenuBarIconView.swift  # 도넛/배터리 아이콘
-    │   └── SettingsView.swift     # 설정 화면
+    │   └── SettingsView.swift     # 설정 (새로고침/메뉴바/주간모델/알림)
     └── Settings/
-        └── AppSettings.swift      # UserDefaults 래퍼
+        └── AppSettings.swift      # UserDefaults 래퍼 + 모델 관리
 ```
 
 ---
