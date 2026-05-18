@@ -29,13 +29,20 @@ struct SessionCard: View {
             ProgressBar(value: bucket.utilization, height: 6, color: level.color)
 
             if let minutes = predictedMinutes {
+                let remainingMinutes = bucket.resetsAtDate.map { Int($0.timeIntervalSinceNow / 60) }
+                let isComfortable = remainingMinutes != nil && minutes > remainingMinutes!
                 HStack(spacing: 4) {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Image(systemName: isComfortable ? "checkmark.circle" : "chart.line.uptrend.xyaxis")
                         .font(.system(size: 11))
-                    Text("약 \(minutes)분 후 한도 도달 예상")
-                        .font(.system(size: 11))
+                    if isComfortable {
+                        Text("이번 세션 한도 여유로움")
+                            .font(.system(size: 11))
+                    } else {
+                        Text("약 \(formatPrediction(minutes))후 한도 도달 예상")
+                            .font(.system(size: 11))
+                    }
                 }
-                .foregroundStyle(.orange)
+                .foregroundStyle(isComfortable ? .green : .orange)
             }
         }
         .padding(.horizontal, 14)
@@ -44,5 +51,14 @@ struct SessionCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("현재 세션, \(Int(bucket.utilization.rounded()))퍼센트 사용됨")
+    }
+
+    private func formatPrediction(_ minutes: Int) -> String {
+        if minutes >= 60 {
+            let h = minutes / 60
+            let m = minutes % 60
+            return m > 0 ? "\(h)시간 \(m)분 " : "\(h)시간 "
+        }
+        return "\(minutes)분 "
     }
 }
