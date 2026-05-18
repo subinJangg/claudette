@@ -42,7 +42,7 @@ struct SessionCard: View {
                             .font(.system(size: 11))
                     }
                 }
-                .foregroundStyle(isComfortable ? .green : .orange)
+                .foregroundStyle(isComfortable ? Color.secondary : Color.orange)
             }
         }
         .padding(.horizontal, 14)
